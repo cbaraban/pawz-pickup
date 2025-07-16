@@ -1,1033 +1,4 @@
-.pickup-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            border-bottom: 1px solid #e1e5e9;
-            transition: all 0.3s;
-        }
-
-        .pickup-item:last-child {
-            border-bottom: none;
-        }
-
-        .pickup-item.late {
-            background: #FCE4E4;
-            border-left: 4px solid #F65A5A;
-        }
-
-        .pickup-info {
-            flex: 1;
-        }
-
-        .pickup-time {
-            font-weight: 600;
-            color: #333;
-        }
-
-        .pickup-details {
-            color: #666;
-            font-size: 14px;
-            margin-top: 5px;
-        }
-
-        .pickup-actions {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .stall-badge {
-            background: #2E5F5C;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .late-badge {
-            background: #F65A5A;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .complete-btn {
-            background: #CCE87B;
-            color: #2E5F5C;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .complete-btn:hover {
-            background: #B8D96A;
-        }
-
-        .no-stalls-message {
-            background: #CCE87B;
-            color: #2E5F5C;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
-
-        .view-toggle {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #F65A5A;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            box-shadow: 0 4px 15px rgba(246, 90, 90, 0.3);
-        }
-
-        .phone-input {
-            display: flex;
-            gap: 10px;
-        }
-
-        .country-code {
-            width: 80px;
-            flex-shrink: 0;
-        }
-
-        .verification-code {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin: 20px 0;
-        }
-
-        .verification-digit {
-            width: 50px;
-            height: 50px;
-            text-align: center;
-            font-size: 24px;
-            border: 2px solid #e1e5e9;
-            border-radius: 8px;
-        }
-
-        .verification-digit:focus {
-            border-color: #2E5F5C;
-        }
-
-        .step-indicator {
-            display: flex;
-            justify-content: center;
-            margin: 20px 0;
-        }
-
-        .step {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: #e1e5e9;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 5px;
-            color: #666;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .step.active {
-            background: #2E5F5C;
-            color: white;
-        }
-
-        .step.completed {
-            background: #CCE87B;
-            color: #2E5F5C;
-        }
-
-        .notification {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #CCE87B;
-            color: #2E5F5C;
-            padding: 15px 25px;
-            border-radius: 25px;
-            font-weight: 600;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            z-index: 9999;
-            animation: slideDown 0.3s ease-out;
-        }
-
-        .notification.error {
-            background: #F65A5A;
-            color: white;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateX(-50%) translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(-50%) translateY(0);
-            }
-        }
-
-        @media (max-width: 768px) {
-            .dashboard-container {
-                padding: 10px;
-            }
-            
-            .dashboard-title {
-                font-size: 24px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- Customer Interface -->
-    <div class="container" id="customerView">
-        <div class="header">
-            <h1>🐾 Pawz Pet Pickup</h1>
-            <p>Quick and easy pickup for your furry friends</p>
-        </div>
-
-        <!-- Step Indicator -->
-        <div class="step-indicator">
-            <div class="step active" id="step1">1</div>
-            <div class="step" id="step2">2</div>
-            <div class="step" id="step3">3</div>
-            <div class="step" id="step4">4</div>
-        </div>
-
-        <!-- Phone Number Entry -->
-        <div class="form-section" id="phoneSection">
-            <div class="form-group">
-                <label for="phone">Enter your phone number</label>
-                <div class="phone-input">
-                    <select class="country-code">
-                        <option value="+1">🇺🇸 +1</option>
-                    </select>
-                    <input type="tel" id="phone" placeholder="(555) 123-4567" required>
-                </div>
-            </div>
-            <button class="btn" onclick="sendVerification()">Send Verification Code</button>
-        </div>
-
-        <!-- Verification Code -->
-        <div class="form-section hidden" id="verificationSection">
-            <div class="form-group">
-                <label>Enter the 6-digit code sent to your phone</label>
-                <div class="verification-code">
-                    <input type="text" class="verification-digit" maxlength="1" oninput="moveToNext(this, 0)">
-                    <input type="text" class="verification-digit" maxlength="1" oninput="moveToNext(this, 1)">
-                    <input type="text" class="verification-digit" maxlength="1" oninput="moveToNext(this, 2)">
-                    <input type="text" class="verification-digit" maxlength="1" oninput="moveToNext(this, 3)">
-                    <input type="text" class="verification-digit" maxlength="1" oninput="moveToNext(this, 4)">
-                    <input type="text" class="verification-digit" maxlength="1" oninput="moveToNext(this, 5)">
-                </div>
-            </div>
-            <button class="btn" onclick="verifyCode()">Verify Code</button>
-        </div>
-
-        <!-- Customer Info -->
-        <div class="form-section hidden" id="customerInfoSection">
-            <div class="form-group">
-                <label for="customerName">Your Name</label>
-                <input type="text" id="customerName" placeholder="John Doe" required>
-            </div>
-            <div class="form-group">
-                <label for="vehicleInfo">Vehicle Make & Model</label>
-                <input type="text" id="vehicleInfo" placeholder="Toyota Camry" required>
-            </div>
-            <div class="form-group">
-                <label>Your Pets</label>
-                <div class="pet-list" id="petList">
-                    <!-- Pets will be loaded here -->
-                </div>
-                <button class="add-pet-btn" onclick="showAddPetForm()">+ Add New Pet</button>
-            </div>
-            <button class="btn" onclick="saveCustomerInfo()">Save & Continue</button>
-        </div>
-
-        <!-- Add Pet Form -->
-        <div class="form-section hidden" id="addPetSection">
-            <div class="form-group">
-                <label for="petName">Pet Name</label>
-                <input type="text" id="petName" placeholder="Buddy" required>
-            </div>
-            <button class="btn" onclick="addPet()">Add Pet</button>
-            <button class="btn" onclick="cancelAddPet()" style="background: #6c757d; margin-top: 10px;">Cancel</button>
-        </div>
-
-        <!-- Pickup Request -->
-        <div class="form-section hidden" id="pickupSection">
-            <div class="form-group">
-                <label>Select Pets for Pickup</label>
-                <div class="pet-list" id="pickupPetList">
-                    <!-- Selected pets will be shown here -->
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="serviceType">Service Type</label>
-                <select id="serviceType">
-                    <option value="daycare">Daycare</option>
-                    <option value="boarding">Boarding</option>
-                    <option value="grooming">Grooming</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Estimated Arrival Time</label>
-                <div class="time-slots">
-                    <div class="time-slot" onclick="selectTime(5)">5 Minutes</div>
-                    <div class="time-slot" onclick="selectTime(10)">10 Minutes</div>
-                    <div class="time-slot" onclick="selectTime(15)">15 Minutes</div>
-                    <div class="time-slot" onclick="selectTime(20)">20 Minutes</div>
-                    <div class="time-slot" onclick="selectTime(30)">30 Minutes</div>
-                </div>
-            </div>
-            <button class="btn" onclick="submitPickupRequest()" disabled id="pickupBtn">I'm on my way!</button>
-        </div>
-
-        <!-- Stall Selection -->
-        <div class="form-section hidden" id="stallSection">
-            <div class="success-message">
-                <h3>We'll see you soon!</h3>
-                <p>Once you arrive, select your parking stall number below.</p>
-            </div>
-            <div class="form-group">
-                <label>Select Your Parking Stall</label>
-                <div id="stallAvailability"></div>
-                <div class="stall-grid" id="stallGrid">
-                    <!-- Stalls will be populated here -->
-                </div>
-            </div>
-            <button class="btn" onclick="selectStall()" disabled id="stallBtn">I've Arrived!</button>
-        </div>
-
-        <!-- Final Confirmation -->
-        <div class="form-section hidden" id="confirmationSection">
-            <div class="success-message">
-                <h3>Perfect! We'll be right out!</h3>
-                <p>A Pawz team member will bring your pup out shortly!</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Staff Dashboard -->
-    <div class="dashboard-container hidden" id="staffDashboard">
-        <div class="dashboard-header">
-            <h1 class="dashboard-title">🐾 Pawz Expected Arrivals</h1>
-            <div style="font-size: 18px; color: #666;" id="currentTime"></div>
-        </div>
-
-        <div id="pickupTimeBlocks">
-            <!-- Time blocks will be populated here -->
-        </div>
-
-        <div id="noPickups" class="text-center" style="padding: 50px; color: #666;">
-            <h3>No pickups scheduled at this time</h3>
-        </div>
-    </div>
-
-    <button class="view-toggle" onclick="toggleView()">Switch to Staff View</button>
-
-    <script>
-        // Configuration
-        const API_BASE_URL = window.location.hostname === 'localhost' 
-            ? 'http://localhost:3000/api' 
-            : 'https://your-api-domain.com/api';
-
-        // Global state
-        let currentView = 'customer';
-        let currentStep = 1;
-        let customerData = {};
-        let selectedTime = null;
-        let selectedStall = null;
-        let authToken = localStorage.getItem('pawz_auth_token');
-        let currentPickupId = null;
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            updateClock();
-            setInterval(updateClock, 1000);
-            
-            if (currentView === 'staff') {
-                loadStaffDashboard();
-                setInterval(loadStaffDashboard, 10000); // Refresh every 10 seconds
-            }
-
-            // Auto-format phone number
-            setupPhoneFormatting();
-            setupVerificationInputs();
-        });
-
-        // API Helper Functions
-        async function apiCall(endpoint, options = {}) {
-            try {
-                const config = {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...(authToken && { 'Authorization': `Bearer ${authToken}` })
-                    },
-                    ...options
-                };
-
-                const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.error || 'Request failed');
-                }
-
-                return data;
-            } catch (error) {
-                console.error('API Error:', error);
-                throw error;
-            }
-        }
-
-        function setButtonLoading(buttonId, loading) {
-            const button = document.getElementById(buttonId);
-            if (loading) {
-                button.classList.add('loading');
-                button.disabled = true;
-            } else {
-                button.classList.remove('loading');
-                button.disabled = false;
-            }
-        }
-
-        function showNotification(message, isError = false) {
-            const notification = document.createElement('div');
-            notification.className = `notification ${isError ? 'error' : ''}`;
-            notification.textContent = message;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.remove();
-            }, 4000);
-        }
-
-        function updateClock() {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('en-US', { 
-                hour: '2-digit', 
-                minute: '2-digit',
-                hour12: true 
-            });
-            const dateString = now.toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-            });
-            const clockElement = document.getElementById('currentTime');
-            if (clockElement) {
-                clockElement.textContent = `${timeString} • ${dateString}`;
-            }
-        }
-
-        // Phone verification flow
-        async function sendVerification() {
-            const phone = document.getElementById('phone').value;
-            if (!phone) {
-                showNotification('Please enter a phone number', true);
-                return;
-            }
-
-            setButtonLoading('sendVerificationBtn', true);
-
-            try {
-                const result = await apiCall('/send-verification', {
-                    method: 'POST',
-                    body: JSON.stringify({ phone })
-                });
-
-                customerData.phone = result.phone;
-                showNotification('Verification code sent!');
-                showSection('verificationSection');
-                updateStep(2);
-                
-                // Focus first verification input
-                document.querySelector('.verification-digit').focus();
-
-            } catch (error) {
-                showNotification(error.message, true);
-            } finally {
-                setButtonLoading('sendVerificationBtn', false);
-            }
-        }
-
-        function setupVerificationInputs() {
-            const inputs = document.querySelectorAll('.verification-digit');
-            inputs.forEach((input, index) => {
-                input.addEventListener('keydown', function(e) {
-                    if (e.key === 'Backspace' && !this.value && index > 0) {
-                        inputs[index - 1].focus();
-                    }
-                });
-                
-                input.addEventListener('input', function(e) {
-                    this.value = this.value.replace(/\D/g, '');
-                });
-            });
-        }
-
-        function moveToNext(input, index) {
-            if (input.value.length === 1 && index < 5) {
-                const nextInput = input.parentElement.children[index + 1];
-                if (nextInput) nextInput.focus();
-            }
-            
-            const digits = document.querySelectorAll('.verification-digit');
-            const allFilled = Array.from(digits).every(digit => digit.value.length === 1);
-            
-            if (allFilled) {
-                setTimeout(() => verifyCode(), 500);
-            }
-        }
-
-        async function verifyCode() {
-            const digits = document.querySelectorAll('.verification-digit');
-            const code = Array.from(digits).map(digit => digit.value).join('');
-            
-            if (code.length !== 6) {
-                showNotification('Please enter the complete 6-digit code', true);
-                return;
-            }
-
-            setButtonLoading('verifyBtn', true);
-
-            try {
-                const result = await apiCall('/verify-code', {
-                    method: 'POST',
-                    body: JSON.stringify({ 
-                        phone: customerData.phone, 
-                        code 
-                    })
-                });
-
-                authToken = result.token;
-                localStorage.setItem('pawz_auth_token', authToken);
-                
-                customerData = { ...customerData, ...result.customer };
-                
-                showNotification('Phone verified successfully!');
-                showSection('customerInfoSection');
-                updateStep(3);
-                loadCustomerData();
-
-            } catch (error) {
-                showNotification(error.message, true);
-                // Clear verification inputs
-                digits.forEach(digit => digit.value = '');
-                digits[0].focus();
-            } finally {
-                setButtonLoading('verifyBtn', false);
-            }
-        }
-
-        function loadCustomerData() {
-            if (customerData.name) {
-                document.getElementById('customerName').value = customerData.name;
-            }
-            if (customerData.vehicle) {
-                document.getElementById('vehicleInfo').value = customerData.vehicle;
-            }
-            
-            loadPetList();
-        }
-
-        function loadPetList() {
-            const petList = document.getElementById('petList');
-            petList.innerHTML = '';
-            
-            if (customerData.pets && customerData.pets.length > 0) {
-                customerData.pets.forEach(pet => {
-                    const petItem = document.createElement('div');
-                    petItem.className = 'pet-item';
-                    petItem.innerHTML = `
-                        <span>${pet}</span>
-                        <button onclick="removePet('${pet}')" 
-                                style="background: #F65A5A; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
-                            Remove
-                        </button>
-                    `;
-                    petList.appendChild(petItem);
-                });
-            }
-        }
-
-        function showAddPetForm() {
-            showSection('addPetSection');
-            document.getElementById('petName').focus();
-        }
-
-        function addPet() {
-            const petName = document.getElementById('petName').value.trim();
-            if (!petName) {
-                showNotification('Please enter a pet name', true);
-                return;
-            }
-            
-            if (!customerData.pets) customerData.pets = [];
-            
-            if (customerData.pets.includes(petName)) {
-                showNotification('Pet with this name already exists', true);
-                return;
-            }
-            
-            customerData.pets.push(petName);
-            
-            document.getElementById('petName').value = '';
-            loadPetList();
-            showSection('customerInfoSection');
-            showNotification(`${petName} added successfully!`);
-        }
-
-        function cancelAddPet() {
-            document.getElementById('petName').value = '';
-            showSection('customerInfoSection');
-        }
-
-        function removePet(petName) {
-            customerData.pets = customerData.pets.filter(pet => pet !== petName);
-            loadPetList();
-            showNotification(`${petName} removed`);
-        }
-
-        async function saveCustomerInfo() {
-            const name = document.getElementById('customerName').value.trim();
-            const vehicle = document.getElementById('vehicleInfo').value.trim();
-            
-            if (!name || !vehicle) {
-                showNotification('Please fill in all required fields', true);
-                return;
-            }
-
-            if (!customerData.pets || customerData.pets.length === 0) {
-                showNotification('Please add at least one pet', true);
-                return;
-            }
-
-            setButtonLoading('saveCustomerBtn', true);
-
-            try {
-                await apiCall('/customer/update', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        name,
-                        vehicle,
-                        pets: customerData.pets
-                    })
-                });
-
-                customerData.name = name;
-                customerData.vehicle = vehicle;
-
-                showNotification('Information saved successfully!');
-                showSection('pickupSection');
-                updateStep(4);
-                loadPickupPets();
-
-            } catch (error) {
-                showNotification(error.message, true);
-            } finally {
-                setButtonLoading('saveCustomerBtn', false);
-            }
-        }
-
-        function loadPickupPets() {
-            const petList = document.getElementById('pickupPetList');
-            petList.innerHTML = '';
-            
-            customerData.pets.forEach(pet => {
-                const petItem = document.createElement('div');
-                petItem.className = 'pet-item';
-                petItem.innerHTML = `
-                    <label style="display: flex; align-items: center; cursor: pointer;">
-                        <input type="checkbox" class="pet-checkbox" value="${pet}" onchange="updatePickupButton()">
-                        <span>${pet}</span>
-                    </label>
-                `;
-                petList.appendChild(petItem);
-            });
-        }
-
-        function updatePickupButton() {
-            const checkboxes = document.querySelectorAll('.pet-checkbox:checked');
-            const pickupBtn = document.getElementById('pickupBtn');
-            pickupBtn.disabled = checkboxes.length === 0 || !selectedTime;
-        }
-
-        function selectTime(minutes) {
-            selectedTime = minutes;
-            
-            document.querySelectorAll('.time-slot').forEach(slot => {
-                slot.classList.remove('selected');
-            });
-            event.target.classList.add('selected');
-            
-            updatePickupButton();
-        }
-
-        async function submitPickupRequest() {
-            const selectedPets = Array.from(document.querySelectorAll('.pet-checkbox:checked')).map(cb => cb.value);
-            const serviceType = document.getElementById('serviceType').value;
-            
-            if (selectedPets.length === 0) {
-                showNotification('Please select at least one pet', true);
-                return;
-            }
-
-            if (!selectedTime) {
-                showNotification('Please select an arrival time', true);
-                return;
-            }
-
-            setButtonLoading('pickupBtn', true);
-
-            try {
-                const result = await apiCall('/pickup/create', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        pets: selectedPets,
-                        serviceType,
-                        etaMinutes: selectedTime
-                    })
-                });
-
-                currentPickupId = result.pickupId;
-                
-                showNotification('Pickup request submitted!');
-                showSection('stallSection');
-                loadStallAvailability();
-
-            } catch (error) {
-                showNotification(error.message, true);
-            } finally {
-                setButtonLoading('pickupBtn', false);
-            }
-        }
-
-        async function loadStallAvailability() {
-            try {
-                const result = await apiCall('/stalls/available');
-                updateStallGrid(result.available, result.occupied);
-                
-                if (result.available.length === 0) {
-                    document.getElementById('stallAvailability').innerHTML = 
-                        '<div class="no-stalls-message">🚗 A stall will become available shortly</div>';
-                    document.getElementById('stallBtn').disabled = true;
-                } else {
-                    document.getElementById('stallAvailability').innerHTML = '';
-                }
-
-            } catch (error) {
-                showNotification('Failed to load stall availability', true);
-            }
-        }
-
-        function updateStallGrid(available, occupied) {
-            const stallGrid = document.getElementById('stallGrid');
-            stallGrid.innerHTML = '';
-            
-            for (let i = 1; i <= 5; i++) {
-                const stall = document.createElement('div');
-                stall.className = 'stall-option';
-                stall.innerHTML = `
-                    <div class="stall-number">${i}</div>
-                    <div>Stall ${i}</div>
-                `;
-                
-                if (occupied.includes(i)) {
-                    stall.classList.add('occupied');
-                } else {
-                    stall.onclick = () => selectStallOption(i);
-                }
-                
-                stallGrid.appendChild(stall);
-            }
-        }
-
-        function selectStallOption(stallNumber) {
-            selectedStall = stallNumber;
-            
-            document.querySelectorAll('.stall-option').forEach(option => {
-                option.classList.remove('selected');
-            });
-            
-            event.target.classList.add('selected');
-            document.getElementById('stallBtn').disabled = false;
-        }
-
-        async function selectStall() {
-            if (!selectedStall || !currentPickupId) {
-                showNotification('Please select a stall', true);
-                return;
-            }
-
-            setButtonLoading('stallBtn', true);
-
-            try {
-                await apiCall(`/pickup/${currentPickupId}/stall`, {
-                    method: 'POST',
-                    body: JSON.stringify({ stallNumber: selectedStall })
-                });
-
-                showNotification(`Stall ${selectedStall} selected! Staff has been notified.`);
-                showSection('confirmationSection');
-                
-                // Play notification sound simulation
-                console.log('🔊 Notification: Customer arrived at stall', selectedStall);
-
-            } catch (error) {
-                showNotification(error.message, true);
-                // Reload stall availability in case it was taken
-                loadStallAvailability();
-            } finally {
-                setButtonLoading('stallBtn', false);
-            }
-        }
-
-        // Staff Dashboard Functions
-        async function loadStaffDashboard() {
-            if (currentView !== 'staff') return;
-
-            try {
-                const pickups = await apiCall('/pickups/current');
-                renderStaffDashboard(pickups);
-            } catch (error) {
-                console.error('Failed to load staff dashboard:', error);
-            }
-        }
-
-        function renderStaffDashboard(pickups) {
-            const container = document.getElementById('pickupTimeBlocks');
-            const noPickups = document.getElementById('noPickups');
-            
-            if (pickups.length === 0) {
-                container.innerHTML = '';
-                noPickups.classList.remove('hidden');
-                return;
-            }
-            
-            noPickups.classList.add('hidden');
-            
-            const timeBlocks = groupPickupsByTimeBlocks(pickups);
-            container.innerHTML = '';
-            
-            const sortedBlocks = Object.keys(timeBlocks).sort();
-            
-            sortedBlocks.forEach(blockTime => {
-                const pickupsInBlock = timeBlocks[blockTime];
-                pickupsInBlock.sort((a, b) => new Date(a.eta_time) - new Date(b.eta_time));
-                
-                const timeBlock = document.createElement('div');
-                timeBlock.className = 'time-block';
-                
-                const header = document.createElement('div');
-                header.className = 'time-block-header';
-                header.textContent = blockTime;
-                
-                timeBlock.appendChild(header);
-                
-                pickupsInBlock.forEach(pickup => {
-                    const pickupItem = document.createElement('div');
-                    pickupItem.className = 'pickup-item';
-                    
-                    if (pickup.status === 'late') {
-                        pickupItem.classList.add('late');
-                    }
-                    
-                    const etaTime = new Date(pickup.eta_time).toLocaleTimeString('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: true
-                    });
-                    
-                    const stallBadge = pickup.stall_number ? 
-                        `<span class="stall-badge">STALL ${pickup.stall_number}</span>` : '';
-                    
-                    const lateBadge = pickup.status === 'late' ? 
-                        `<span class="late-badge">LATE</span>` : '';
-                    
-                    pickupItem.innerHTML = `
-                        <div class="pickup-info">
-                            <div class="pickup-time">${etaTime}: ${pickup.customer_name}</div>
-                            <div class="pickup-details">
-                                ${pickup.pets.join(', ')} • ${pickup.service_type} • ${pickup.vehicle}
-                            </div>
-                        </div>
-                        <div class="pickup-actions">
-                            ${lateBadge}
-                            ${stallBadge}
-                            <button class="complete-btn" onclick="completePickup(${pickup.id})">
-                                Picked Up
-                            </button>
-                        </div>
-                    `;
-                    
-                    timeBlock.appendChild(pickupItem);
-                });
-                
-                container.appendChild(timeBlock);
-            });
-        }
-
-        function groupPickupsByTimeBlocks(pickups) {
-            const blocks = {};
-            
-            pickups.forEach(pickup => {
-                const eta = new Date(pickup.eta_time);
-                const minutes = eta.getMinutes();
-                const blockStart = Math.floor(minutes / 15) * 15;
-                const blockEnd = blockStart + 15;
-                
-                const blockStartTime = new Date(eta);
-                blockStartTime.setMinutes(blockStart, 0, 0);
-                
-                const blockEndTime = new Date(eta);
-                blockEndTime.setMinutes(blockEnd, 0, 0);
-                
-                const blockKey = `${blockStartTime.toLocaleTimeString('en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: true
-                })} - ${blockEndTime.toLocaleTimeString('en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: true
-                })}`;
-                
-                if (!blocks[blockKey]) {
-                    blocks[blockKey] = [];
-                }
-                
-                blocks[blockKey].push(pickup);
-            });
-            
-            return blocks;
-        }
-
-        async function completePickup(pickupId) {
-            try {
-                await apiCall(`/pickup/${pickupId}/complete`, {
-                    method: 'POST'
-                });
-
-                showNotification('Pickup completed successfully!');
-                loadStaffDashboard(); // Refresh the dashboard
-
-            } catch (error) {
-                showNotification('Failed to complete pickup', true);
-            }
-        }
-
-        // Utility Functions
-        function showSection(sectionId) {
-            const sections = ['phoneSection', 'verificationSection', 'customerInfoSection', 
-                            'addPetSection', 'pickupSection', 'stallSection', 'confirmationSection'];
-            
-            sections.forEach(id => {
-                document.getElementById(id).classList.add('hidden');
-            });
-            
-            document.getElementById(sectionId).classList.remove('hidden');
-        }
-
-        function updateStep(step) {
-            currentStep = step;
-            
-            for (let i = 1; i <= 4; i++) {
-                const stepEl = document.getElementById(`step${i}`);
-                stepEl.classList.remove('active', 'completed');
-                
-                if (i < step) {
-                    stepEl.classList.add('completed');
-                } else if (i === step) {
-                    stepEl.classList.add('active');
-                }
-            }
-        }
-
-        function toggleView() {
-            const customerView = document.getElementById('customerView');
-            const staffDashboard = document.getElementById('staffDashboard');
-            const toggleBtn = document.querySelector('.view-toggle');
-            
-            if (currentView === 'customer') {
-                customerView.classList.add('hidden');
-                staffDashboard.classList.remove('hidden');
-                toggleBtn.textContent = 'Switch to Customer View';
-                currentView = 'staff';
-                loadStaffDashboard();
-                setInterval(loadStaffDashboard, 10000);
-            } else {
-                customerView.classList.remove('hidden');
-                staffDashboard.classList.add('hidden');
-                toggleBtn.textContent = 'Switch to Staff View';
-                currentView = 'customer';
-            }
-        }
-
-        function setupPhoneFormatting() {
-            document.getElementById('phone').addEventListener('input', function(e) {
-                let value = e.target.value.replace(/\D/g, '');
-                if (value.length >= 6) {
-                    value = `(${value.slice(0,3)}) ${value.slice(3,6)}-${value.slice(6,10)}`;
-                } else if (value.length >= 3) {
-                    value = `(${value.slice(0,3)}) ${value.slice(3)}`;
-                }
-                e.target.value = value;
-            });
-        }
-
-        // Keyboard navigation
-        document.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                const activeSection = document.querySelector('.form-section:not(.hidden)');
-                if (activeSection) {
-                    const button = activeSection.querySelector('.btn:not(:disabled)');
-                    if (button) {
-                        button.click();
-                    }
-                }
-            }
-        });
-
-        // Add accessibility
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' || e.key === ' ') {
-                const target = e.target;
-                if (target.classList.contains('time-slot')) {
-                    target.click();
-                    e.preventDefault();
-                }
-                if (target.classList.contains('stall-option') && !target.classList.contains('occupied')) {
-                    target.click();
-                    e.preventDefault();
-                }
-            }
-        });
-    </script>
-</body>
-</html><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1054,14 +25,6 @@
             min-height: 100vh;
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
             position: relative;
-        }
-
-        .dashboard-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            min-height: 100vh;
-            padding: 20px;
         }
 
         .header {
@@ -1135,133 +98,68 @@
             transform: none;
         }
 
-        .btn.loading {
-            position: relative;
-            color: transparent;
-        }
-
-        .btn.loading::after {
-            content: '';
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            top: 50%;
-            left: 50%;
-            margin-left: -10px;
-            margin-top: -10px;
-            border: 2px solid transparent;
-            border-top-color: #ffffff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .pet-list {
-            background: #B8E0DD;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-
-        .pet-item {
+        .phone-input {
             display: flex;
-            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .country-code {
+            width: 80px;
+            flex-shrink: 0;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .step {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #e1e5e9;
+            display: flex;
             align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #e1e5e9;
-        }
-
-        .pet-item:last-child {
-            border-bottom: none;
-        }
-
-        .pet-checkbox {
-            margin-right: 10px;
-        }
-
-        .add-pet-btn {
-            background: transparent;
-            color: #2E5F5C;
-            border: 2px dashed #2E5F5C;
-            padding: 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            width: 100%;
+            justify-content: center;
+            margin: 0 5px;
+            color: #666;
+            font-weight: 600;
             font-size: 14px;
         }
 
-        .time-slots {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
+        .step.active {
+            background: #2E5F5C;
+            color: white;
+        }
+
+        .step.completed {
+            background: #CCE87B;
+            color: #2E5F5C;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .verification-code {
+            display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+            justify-content: center;
+            margin: 20px 0;
         }
 
-        .time-slot {
-            background: #B8E0DD;
-            border: 2px solid #B8E0DD;
-            padding: 15px;
-            border-radius: 8px;
+        .verification-digit {
+            width: 50px;
+            height: 50px;
             text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .time-slot:hover {
-            border-color: #2E5F5C;
-            background: #A3D5D1;
-        }
-
-        .time-slot.selected {
-            background: #F65A5A;
-            color: white;
-            border-color: #F65A5A;
-        }
-
-        .stall-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .stall-option {
-            background: #B8E0DD;
-            border: 2px solid #B8E0DD;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            position: relative;
-        }
-
-        .stall-option:hover:not(.occupied) {
-            border-color: #2E5F5C;
-            background: #A3D5D1;
-        }
-
-        .stall-option.selected {
-            background: #F65A5A;
-            color: white;
-            border-color: #F65A5A;
-        }
-
-        .stall-option.occupied {
-            background: #f5f5f5;
-            color: #999;
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-
-        .stall-number {
             font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 5px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+        }
+
+        .verification-digit:focus {
+            border-color: #2E5F5C;
         }
 
         .success-message {
@@ -1284,43 +182,228 @@
             font-weight: 600;
         }
 
-        .hidden {
-            display: none;
-        }
-
-        /* Dashboard Styles */
-        .dashboard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #e1e5e9;
-        }
-
-        .dashboard-title {
-            font-size: 32px;
-            color: #333;
-        }
-
-        .time-block {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            overflow: hidden;
-        }
-
-        .time-block-header {
-            background: linear-gradient(135deg, #2E5F5C 0%, #1A3C39 100%);
-            color: white;
-            padding: 15px 20px;
-            font-size: 18px;
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #CCE87B;
+            color: #2E5F5C;
+            padding: 15px 25px;
+            border-radius: 25px;
             font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            z-index: 9999;
         }
 
-        .pickup-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px
+        .notification.error {
+            background: #F65A5A;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🐾 Pawz Pet Pickup</h1>
+            <p>Quick and easy pickup for your furry friends</p>
+        </div>
+
+        <div class="step-indicator">
+            <div class="step active" id="step1">1</div>
+            <div class="step" id="step2">2</div>
+            <div class="step" id="step3">3</div>
+            <div class="step" id="step4">4</div>
+        </div>
+
+        <!-- Phone Number Entry -->
+        <div class="form-section" id="phoneSection">
+            <div class="form-group">
+                <label for="phone">Enter your phone number</label>
+                <div class="phone-input">
+                    <select class="country-code">
+                        <option value="+1">🇺🇸 +1</option>
+                    </select>
+                    <input type="tel" id="phone" placeholder="(555) 123-4567" required>
+                </div>
+            </div>
+            <button class="btn" onclick="sendVerification()">Send Verification Code</button>
+        </div>
+
+        <!-- Verification Code -->
+        <div class="form-section hidden" id="verificationSection">
+            <div class="form-group">
+                <label>Enter the 6-digit code sent to your phone</label>
+                <div class="verification-code">
+                    <input type="text" class="verification-digit" maxlength="1" oninput="moveToNext(this, 0)">
+                    <input type="text" class="verification-digit" maxlength="1" oninput="moveToNext(this, 1)">
+                    <input type="text" class="verification-digit" maxlength="1" oninput="moveToNext(this, 2)">
+                    <input type="text" class="verification-digit" maxlength="1" oninput="moveToNext(this, 3)">
+                    <input type="text" class="verification-digit" maxlength="1" oninput="moveToNext(this, 4)">
+                    <input type="text" class="verification-digit" maxlength="1" oninput="moveToNext(this, 5)">
+                </div>
+            </div>
+            <button class="btn" onclick="verifyCode()">Verify Code</button>
+        </div>
+
+        <!-- Success -->
+        <div class="form-section hidden" id="successSection">
+            <div class="success-message">
+                <h3>🎉 SMS Verification Works!</h3>
+                <p>Your Pawz Pet Pickup system is fully functional!</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE_URL = 'https://hammerhead-app-qxfap.ondigitalocean.app/api';
+
+        let customerData = {};
+
+        function showNotification(message, isError = false) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${isError ? 'error' : ''}`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 4000);
+        }
+
+        async function sendVerification() {
+            const phone = document.getElementById('phone').value;
+            if (!phone) {
+                showNotification('Please enter a phone number', true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/send-verification`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ phone })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    customerData.phone = data.phone;
+                    showNotification('Verification code sent!');
+                    showSection('verificationSection');
+                    updateStep(2);
+                    document.querySelector('.verification-digit').focus();
+                } else {
+                    showNotification(data.error || 'Failed to send verification code', true);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Network error - please try again', true);
+            }
+        }
+
+        function moveToNext(input, index) {
+            if (input.value.length === 1 && index < 5) {
+                const nextInput = input.parentElement.children[index + 1];
+                if (nextInput) nextInput.focus();
+            }
+            
+            const digits = document.querySelectorAll('.verification-digit');
+            const allFilled = Array.from(digits).every(digit => digit.value.length === 1);
+            
+            if (allFilled) {
+                setTimeout(() => verifyCode(), 500);
+            }
+        }
+
+        async function verifyCode() {
+            const digits = document.querySelectorAll('.verification-digit');
+            const code = Array.from(digits).map(digit => digit.value).join('');
+            
+            if (code.length !== 6) {
+                showNotification('Please enter the complete 6-digit code', true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/verify-code`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        phone: customerData.phone, 
+                        code 
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showNotification('Phone verified successfully!');
+                    showSection('successSection');
+                    updateStep(4);
+                } else {
+                    showNotification(data.error || 'Invalid verification code', true);
+                    digits.forEach(digit => digit.value = '');
+                    digits[0].focus();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Network error - please try again', true);
+            }
+        }
+
+        function showSection(sectionId) {
+            const sections = ['phoneSection', 'verificationSection', 'successSection'];
+            
+            sections.forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            
+            document.getElementById(sectionId).classList.remove('hidden');
+        }
+
+        function updateStep(step) {
+            for (let i = 1; i <= 4; i++) {
+                const stepEl = document.getElementById(`step${i}`);
+                stepEl.classList.remove('active', 'completed');
+                
+                if (i < step) {
+                    stepEl.classList.add('completed');
+                } else if (i === step) {
+                    stepEl.classList.add('active');
+                }
+            }
+        }
+
+        // Auto-format phone number
+        document.getElementById('phone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 6) {
+                value = `(${value.slice(0,3)}) ${value.slice(3,6)}-${value.slice(6,10)}`;
+            } else if (value.length >= 3) {
+                value = `(${value.slice(0,3)}) ${value.slice(3)}`;
+            }
+            e.target.value = value;
+        });
+
+        // Handle verification input
+        document.querySelectorAll('.verification-digit').forEach((input, index) => {
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Backspace' && !this.value && index > 0) {
+                    document.querySelectorAll('.verification-digit')[index - 1].focus();
+                }
+            });
+            
+            input.addEventListener('input', function(e) {
+                this.value = this.value.replace(/\D/g, '');
+            });
+        });
+    </script>
+</body>
+</html>
