@@ -585,6 +585,45 @@
         return;
     }
 
+    // Clean and format phone number properly
+    const cleanPhone = phoneInput.replace(/\D/g, '');
+    const formattedPhone = cleanPhone.startsWith('1') ? `+${cleanPhone}` : `+1${cleanPhone}`;
+
+    console.log('Sending to API:', formattedPhone); // Debug log
+
+    setButtonLoading('sendVerificationBtn', true);
+
+    try {
+        const result = await fetch(`${API_BASE_URL}/send-verification`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ phone: formattedPhone })
+        });
+
+        const data = await result.json();
+        console.log('API Response:', data); // Debug log
+
+        if (result.ok) {
+            customerData.phone = data.phone;
+            showNotification('Verification code sent! Check your phone.');
+            showSection('verificationSection');
+            updateStep(2);
+            
+            document.querySelector('.verification-digit').focus();
+        } else {
+            console.error('API Error Details:', data);
+            showNotification(`Error: ${data.error || 'Failed to send verification code'}`, true);
+        }
+    } catch (error) {
+        console.error('Network Error:', error);
+        showNotification('Network error - please try again', true);
+    } finally {
+        setButtonLoading('sendVerificationBtn', false);
+    }
+}
+
     // Clean and format phone number
     const cleanPhone = phoneInput.replace(/\D/g, '');
     const formattedPhone = cleanPhone.startsWith('1') ? `+${cleanPhone}` : `+1${cleanPhone}`;
