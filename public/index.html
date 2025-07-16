@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pawz Pet Pickup</title>
     <style>
-        /* ... all your CSS here, unchanged ... */
+        /* (keep all your existing styles here) */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #2E5F5C 0%, #1A3C39 100%); min-height: 100vh; color: #333; }
         .container { max-width: 400px; margin: 0 auto; background: white; min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.1); position: relative; }
@@ -60,22 +60,17 @@
     </style>
 </head>
 <body>
-    <!-- Customer Interface -->
     <div class="container" id="customerView">
         <div class="header">
             <h1>🐾 Pawz Pet Pickup</h1>
             <p>Quick and easy pickup for your furry friends</p>
         </div>
-
-        <!-- Step Indicator -->
         <div class="step-indicator">
             <div class="step active" id="step1">1</div>
             <div class="step" id="step2">2</div>
             <div class="step" id="step3">3</div>
             <div class="step" id="step4">4</div>
         </div>
-
-        <!-- Phone Number Entry -->
         <div class="form-section" id="phoneSection">
             <div class="form-group">
                 <label for="phone">Enter your phone number</label>
@@ -88,8 +83,6 @@
             </div>
             <button class="btn" id="sendVerificationBtn">Send Verification Code</button>
         </div>
-
-        <!-- Verification Code -->
         <div class="form-section hidden" id="verificationSection">
             <div class="form-group">
                 <label>Enter the 6-digit code sent to your phone</label>
@@ -104,8 +97,6 @@
             </div>
             <button class="btn" id="verifyCodeBtn">Verify Code</button>
         </div>
-
-        <!-- Customer Info -->
         <div class="form-section hidden" id="customerInfoSection">
             <div class="form-group">
                 <label for="customerName">Your Name</label>
@@ -117,15 +108,11 @@
             </div>
             <div class="form-group">
                 <label>Your Pets</label>
-                <div class="pet-list" id="petList">
-                    <!-- Pets will be loaded here -->
-                </div>
+                <div class="pet-list" id="petList"></div>
                 <button class="add-pet-btn" id="addPetBtn">+ Add New Pet</button>
             </div>
             <button class="btn" id="saveCustomerBtn">Save & Continue</button>
         </div>
-
-        <!-- Add Pet Form -->
         <div class="form-section hidden" id="addPetSection">
             <div class="form-group">
                 <label for="petName">Pet Name</label>
@@ -134,14 +121,10 @@
             <button class="btn" id="addPetSubmitBtn">Add Pet</button>
             <button class="btn" id="cancelAddPetBtn" style="background: #6c757d; margin-top: 10px;">Cancel</button>
         </div>
-
-        <!-- Pickup Request -->
         <div class="form-section hidden" id="pickupSection">
             <div class="form-group">
                 <label>Select Pets for Pickup</label>
-                <div class="pet-list" id="pickupPetList">
-                    <!-- Selected pets will be shown here -->
-                </div>
+                <div class="pet-list" id="pickupPetList"></div>
             </div>
             <div class="form-group">
                 <label for="serviceType">Service Type</label>
@@ -163,8 +146,6 @@
             </div>
             <button class="btn" id="submitPickupBtn" disabled>I'm on my way!</button>
         </div>
-
-        <!-- Stall Selection -->
         <div class="form-section hidden" id="stallSection">
             <div class="success-message">
                 <h3>We'll see you soon!</h3>
@@ -173,14 +154,10 @@
             <div class="form-group">
                 <label>Select Your Parking Stall</label>
                 <div id="stallAvailability"></div>
-                <div class="stall-grid" id="stallGrid">
-                    <!-- Stalls will be populated here -->
-                </div>
+                <div class="stall-grid" id="stallGrid"></div>
             </div>
             <button class="btn" id="selectStallBtn" disabled>I've Arrived!</button>
         </div>
-
-        <!-- Final Confirmation -->
         <div class="form-section hidden" id="confirmationSection">
             <div class="success-message">
                 <h3>Perfect! We'll be right out!</h3>
@@ -188,14 +165,10 @@
             </div>
         </div>
     </div>
-
     <button class="view-toggle" id="viewToggleBtn">Switch to Staff View</button>
 
     <script>
-        // Configuration
         const API_BASE_URL = 'https://hammerhead-app-qxfap.ondigitalocean.app/api';
-
-        // Global state
         let currentView = 'customer';
         let currentStep = 1;
         let customerData = {};
@@ -204,7 +177,6 @@
         let authToken = localStorage.getItem('pawz_auth_token');
         let currentPickupId = null;
 
-        // Utility functions
         function showNotification(message, isError = false) {
             const notification = document.createElement('div');
             notification.className = `notification ${isError ? 'error' : ''}`;
@@ -215,12 +187,14 @@
 
         function setButtonLoading(buttonId, loading) {
             const button = document.getElementById(buttonId);
-            if (loading) {
-                button.classList.add('loading');
-                button.disabled = true;
-            } else {
-                button.classList.remove('loading');
-                button.disabled = false;
+            if (button) {
+                if (loading) {
+                    button.classList.add('loading');
+                    button.disabled = true;
+                } else {
+                    button.classList.remove('loading');
+                    button.disabled = false;
+                }
             }
         }
 
@@ -228,25 +202,28 @@
             const sections = ['phoneSection', 'verificationSection', 'customerInfoSection', 
                             'addPetSection', 'pickupSection', 'stallSection', 'confirmationSection'];
             sections.forEach(id => {
-                document.getElementById(id).classList.add('hidden');
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
             });
-            document.getElementById(sectionId).classList.remove('hidden');
+            const el = document.getElementById(sectionId);
+            if (el) el.classList.remove('hidden');
         }
 
         function updateStep(step) {
             currentStep = step;
             for (let i = 1; i <= 4; i++) {
                 const stepEl = document.getElementById(`step${i}`);
-                stepEl.classList.remove('active', 'completed');
-                if (i < step) {
-                    stepEl.classList.add('completed');
-                } else if (i === step) {
-                    stepEl.classList.add('active');
+                if (stepEl) {
+                    stepEl.classList.remove('active', 'completed');
+                    if (i < step) {
+                        stepEl.classList.add('completed');
+                    } else if (i === step) {
+                        stepEl.classList.add('active');
+                    }
                 }
             }
         }
 
-        // --- FIXED FUNCTION: Always send E.164 with "+"
         async function sendVerification() {
             const phoneInput = document.getElementById('phone').value;
             if (!phoneInput) {
@@ -254,15 +231,4 @@
                 return;
             }
             const cleanPhone = phoneInput.replace(/\D/g, '');
-            let formattedPhone;
-            // If you want to support more countries, grab value from dropdown
-            const countryCode = document.querySelector('.country-code').value; // e.g. "+1"
-            if (cleanPhone.length === 10) {
-                formattedPhone = `${countryCode}${cleanPhone}`;
-            } else if (cleanPhone.length === 11 && cleanPhone.startsWith('1')) {
-                formattedPhone = `+${cleanPhone}`;
-            } else {
-                showNotification('Please enter a valid 10-digit US phone number', true);
-                return;
-            }
-           
+            let formatted
