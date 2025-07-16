@@ -122,7 +122,14 @@ const formatPhoneNumber = (phone) => {
 
 // Validation middleware
 const validatePhone = [
-    body('phone').isMobilePhone('en-US').withMessage('Invalid phone number format')
+    body('phone').custom(phone => {
+        // Accept 10-digit or 11-digit (starting with 1)
+        const digits = phone.replace(/\D/g, '');
+        if ((digits.length === 10) || (digits.length === 11 && digits.startsWith('1'))) {
+            return true;
+        }
+        throw new Error('Invalid phone number format');
+    })
 ];
 
 const validateCustomerInfo = [
