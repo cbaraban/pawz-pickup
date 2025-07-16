@@ -167,68 +167,143 @@
     </div>
     <button class="view-toggle" id="viewToggleBtn">Switch to Staff View</button>
 
-    <script>
-        const API_BASE_URL = 'https://hammerhead-app-qxfap.ondigitalocean.app/api';
-        let currentView = 'customer';
-        let currentStep = 1;
-        let customerData = {};
-        let selectedTime = null;
-        let selectedStall = null;
-        let authToken = localStorage.getItem('pawz_auth_token');
-        let currentPickupId = null;
+   <script>
+const API_BASE_URL = 'https://hammerhead-app-qxfap.ondigitalocean.app/api';
+let currentView = 'customer';
+let currentStep = 1;
+let customerData = {};
+let selectedTime = null;
+let selectedStall = null;
+let authToken = localStorage.getItem('pawz_auth_token');
+let currentPickupId = null;
 
-        function showNotification(message, isError = false) {
-            const notification = document.createElement('div');
-            notification.className = `notification ${isError ? 'error' : ''}`;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            setTimeout(() => { notification.remove(); }, 4000);
+function showNotification(message, isError = false) {
+    const notification = document.createElement('div');
+    notification.className = `notification ${isError ? 'error' : ''}`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    setTimeout(() => { notification.remove(); }, 4000);
+}
+
+function setButtonLoading(buttonId, loading) {
+    const button = document.getElementById(buttonId);
+    if (button) {
+        if (loading) {
+            button.classList.add('loading');
+            button.disabled = true;
+        } else {
+            button.classList.remove('loading');
+            button.disabled = false;
         }
+    }
+}
 
-        function setButtonLoading(buttonId, loading) {
-            const button = document.getElementById(buttonId);
-            if (button) {
-                if (loading) {
-                    button.classList.add('loading');
-                    button.disabled = true;
-                } else {
-                    button.classList.remove('loading');
-                    button.disabled = false;
-                }
+function showSection(sectionId) {
+    const sections = ['phoneSection', 'verificationSection', 'customerInfoSection', 
+                    'addPetSection', 'pickupSection', 'stallSection', 'confirmationSection'];
+    sections.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+    });
+    const el = document.getElementById(sectionId);
+    if (el) el.classList.remove('hidden');
+}
+
+function updateStep(step) {
+    currentStep = step;
+    for (let i = 1; i <= 4; i++) {
+        const stepEl = document.getElementById(`step${i}`);
+        if (stepEl) {
+            stepEl.classList.remove('active', 'completed');
+            if (i < step) {
+                stepEl.classList.add('completed');
+            } else if (i === step) {
+                stepEl.classList.add('active');
             }
         }
+    }
+}
 
-        function showSection(sectionId) {
-            const sections = ['phoneSection', 'verificationSection', 'customerInfoSection', 
-                            'addPetSection', 'pickupSection', 'stallSection', 'confirmationSection'];
-            sections.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.classList.add('hidden');
-            });
-            const el = document.getElementById(sectionId);
-            if (el) el.classList.remove('hidden');
-        }
+// ----------- FIXED: This function is now complete!
+async function sendVerification() {
+    const phoneInput = document.getElementById('phone').value;
+    if (!phoneInput) {
+        showNotification('Please enter a phone number', true);
+        return;
+    }
+    const cleanPhone = phoneInput.replace(/\D/g, '');
+    let formattedPhone;
+    const countryCode = document.querySelector('.country-code').value; // e.g. "+1"
+    if (cleanPhone.length === 10) {
+        formattedPhone = `${countryCode}${cleanPhone}`;
+    } else if (cleanPhone.length === 11 && cleanPhone.startsWith('1')) {
+        formattedPhone = `+${cleanPhone}`;
+    } else {
+        showNotification('Please enter a valid 10-digit US phone number', true);
+        return;
+    }
 
-        function updateStep(step) {
-            currentStep = step;
-            for (let i = 1; i <= 4; i++) {
-                const stepEl = document.getElementById(`step${i}`);
-                if (stepEl) {
-                    stepEl.classList.remove('active', 'completed');
-                    if (i < step) {
-                        stepEl.classList.add('completed');
-                    } else if (i === step) {
-                        stepEl.classList.add('active');
-                    }
-                }
+    setButtonLoading('sendVerificationBtn', true);
+
+    try {
+        const result = await fetch(`${API_BASE_URL}/send-verification`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ phone: formattedPhone })
+        });
+
+        const data = await result.json();
+
+        if (result.ok) {
+            customerData.phone = data.phone;
+            showNotification('Verification code sent! Check your phone.');
+            showSection('verificationSection');
+            updateStep(2);
+
+            document.querySelector('.verification-digit').focus();
+        } else {
+            if (data.errors && data.errors.length > 0) {
+                showNotification(`Error: ${data.errors[0].msg}`, true);
+            } else {
+                showNotification(`Error: ${data.error || 'Failed to send verification code'}`, true);
             }
         }
+    } catch (error) {
+        showNotification('Network error - please try again', true);
+    } finally {
+        setButtonLoading('sendVerificationBtn', false);
+    }
+}
 
-        async function sendVerification() {
-            const phoneInput = document.getElementById('phone').value;
-            if (!phoneInput) {
-                showNotification('Please enter a phone number', true);
-                return;
-            }
-            const cleanPhone = phoneInput.replace(/\D/g, '');
-            let formatted
+// ----------- Basic stub for staff login
+function showStaffLogin() {
+    const username = prompt('Staff Username:');
+    if (!username) return;
+
+    const password = prompt('Staff Password:');
+    if (!password) return;
+
+    // Example logic for demo purposes
+    if (username === 'pawzstaff' && password === 'pawz2024!') {
+        showNotification('Staff access granted! Opening dashboard...');
+        setTimeout(() => {
+            window.open('/staff-dashboard', '_blank');
+        }, 1000);
+    } else {
+        showNotification('Invalid credentials. Access denied.', true);
+    }
+}
+
+// ----------- Set up event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('sendVerificationBtn').addEventListener('click', sendVerification);
+    document.getElementById('viewToggleBtn').addEventListener('click', showStaffLogin);
+
+    // TODO: Add your other event listeners here (for the rest of your workflow)
+});
+
+</script>
+</body>
+</html>
