@@ -8,7 +8,6 @@ const jwt = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const { body, validationResult } = require('express-validator');
-require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
