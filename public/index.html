@@ -585,9 +585,23 @@
         return;
     }
 
-    // Clean and format phone number
-    const cleanPhone = phoneInput.replace(/\D/g, '');
-    const formattedPhone = cleanPhone.startsWith('1') ? `+${cleanPhone}` : `+1${cleanPhone}`;
+    // Clean and format phone number more thoroughly
+    const cleanPhone = phoneInput.replace(/\D/g, ''); // Remove all non-digits
+    
+    // Ensure it's a valid US phone number (10 or 11 digits)
+    let formattedPhone;
+    if (cleanPhone.length === 10) {
+        formattedPhone = `+1${cleanPhone}`;
+    } else if (cleanPhone.length === 11 && cleanPhone.startsWith('1')) {
+        formattedPhone = `+${cleanPhone}`;
+    } else {
+        showNotification('Please enter a valid 10-digit US phone number', true);
+        return;
+    }
+
+    console.log('Original input:', phoneInput);
+    console.log('Cleaned phone:', cleanPhone);
+    console.log('Formatted for API:', formattedPhone);
 
     setButtonLoading('sendVerificationBtn', true);
 
@@ -601,17 +615,22 @@
         });
 
         const data = await result.json();
+        console.log('API Response:', data);
 
         if (result.ok) {
             customerData.phone = data.phone;
-            showNotification('Verification code sent!');
+            showNotification('Verification code sent! Check your phone.');
             showSection('verificationSection');
             updateStep(2);
             
             document.querySelector('.verification-digit').focus();
         } else {
-            console.error('API Error:', data);
-            showNotification(data.error || 'Failed to send verification code', true);
+            console.error('API Error Details:', data);
+            if (data.errors && data.errors.length > 0) {
+                showNotification(`Error: ${data.errors[0].msg}`, true);
+            } else {
+                showNotification(`Error: ${data.error || 'Failed to send verification code'}`, true);
+            }
         }
     } catch (error) {
         console.error('Network Error:', error);
