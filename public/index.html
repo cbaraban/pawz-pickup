@@ -578,7 +578,7 @@
         }
 
         // API functions
-       async function sendVerification() {
+     async function sendVerification() {
     const phoneInput = document.getElementById('phone').value;
     if (!phoneInput) {
         showNotification('Please enter a phone number', true);
@@ -591,9 +591,9 @@
     // Ensure it's a valid US phone number (10 or 11 digits)
     let formattedPhone;
     if (cleanPhone.length === 10) {
-        formattedPhone = `+1${cleanPhone}`;
+        formattedPhone = `1${cleanPhone}`;  // No + sign
     } else if (cleanPhone.length === 11 && cleanPhone.startsWith('1')) {
-        formattedPhone = `+${cleanPhone}`;
+        formattedPhone = cleanPhone;  // No + sign
     } else {
         showNotification('Please enter a valid 10-digit US phone number', true);
         return;
