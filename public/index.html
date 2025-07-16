@@ -934,4 +934,149 @@
             // Customer info
             document.getElementById('addPetBtn').addEventListener('click', () => showSection('addPetSection'));
             document.getElementById('addPetSubmitBtn').addEventListener('click', addPet);
-            document.getElementById('cancelAddPetBtn').addEventListener('click', () => showSection('customerInfoSection
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Phone verification
+            document.getElementById('sendVerificationBtn').addEventListener('click', sendVerification);
+            document.getElementById('verifyCodeBtn').addEventListener('click', verifyCode);
+
+            // Customer info
+            document.getElementById('addPetBtn').addEventListener('click', () => showSection('addPetSection'));
+            document.getElementById('addPetSubmitBtn').addEventListener('click', addPet);
+            document.getElementById('cancelAddPetBtn').addEventListener('click', () => showSection('customerInfoSection'));
+            document.getElementById('saveCustomerBtn').addEventListener('click', saveCustomerInfo);
+
+            // Pickup flow
+            document.getElementById('submitPickupBtn').addEventListener('click', submitPickupRequest);
+            document.getElementById('selectStallBtn').addEventListener('click', selectStall);
+
+            // Time slot selection
+            document.getElementById('timeSlots').addEventListener('click', function(e) {
+                if (e.target.classList.contains('time-slot')) {
+                    selectedTime = parseInt(e.target.dataset.time);
+                    
+                    document.querySelectorAll('.time-slot').forEach(slot => {
+                        slot.classList.remove('selected');
+                    });
+                    e.target.classList.add('selected');
+                    
+                    updatePickupButton();
+                }
+            });
+
+            // Pet checkbox changes
+            document.addEventListener('change', function(e) {
+                if (e.target.classList.contains('pet-checkbox')) {
+                    updatePickupButton();
+                }
+            });
+
+            // Auto-format phone number
+            document.getElementById('phone').addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length >= 6) {
+                    value = `(${value.slice(0,3)}) ${value.slice(3,6)}-${value.slice(6,10)}`;
+                } else if (value.length >= 3) {
+                    value = `(${value.slice(0,3)}) ${value.slice(3)}`;
+                }
+                e.target.value = value;
+            });
+
+            // Handle verification input
+            document.querySelectorAll('.verification-digit').forEach((input, index) => {
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && !this.value && index > 0) {
+                        document.querySelectorAll('.verification-digit')[index - 1].focus();
+                    }
+                });
+                
+                input.addEventListener('input', function(e) {
+                    this.value = this.value.replace(/\D/g, '');
+                    
+                    if (this.value.length === 1 && index < 5) {
+                        const nextInput = document.querySelectorAll('.verification-digit')[index + 1];
+                        if (nextInput) nextInput.focus();
+                    }
+                    
+                    // Check if all digits are filled
+                    const digits = document.querySelectorAll('.verification-digit');
+                    const allFilled = Array.from(digits).every(digit => digit.value.length === 1);
+                    
+                    if (allFilled) {
+                        setTimeout(() => verifyCode(), 500);
+                    }
+                });
+            });
+
+            // Add pet name enter key
+            document.getElementById('petName').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addPet();
+                }
+            });
+
+            // Phone input enter key
+            document.getElementById('phone').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendVerification();
+                }
+            });
+
+            // View toggle - Staff Login Protection
+            document.getElementById('viewToggleBtn').addEventListener('click', function() {
+                showStaffLogin();
+            });
+
+            // Global keyboard shortcuts
+            document.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const activeSection = document.querySelector('.form-section:not(.hidden)');
+                    if (activeSection) {
+                        const button = activeSection.querySelector('.btn:not(:disabled)');
+                        if (button && !button.classList.contains('loading')) {
+                            button.click();
+                        }
+                    }
+                }
+            });
+
+            // Add focus styles for accessibility
+            document.querySelectorAll('.time-slot, .stall-option').forEach(element => {
+                element.setAttribute('tabindex', '0');
+                
+                element.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        this.click();
+                        e.preventDefault();
+                    }
+                });
+            });
+
+            // Initialize
+            console.log('🐾 Pawz Pet Pickup System Loaded');
+        });
+
+        // Staff Authentication Functions
+        function showStaffLogin() {
+            const username = prompt('Staff Username:');
+            if (!username) return;
+
+            const password = prompt('Staff Password:');
+            if (!password) return;
+
+            // Check credentials (you can change these)
+            if (username === 'pawzstaff' && password === 'pawz2024!') {
+                showNotification('Staff access granted! Opening dashboard...');
+                setTimeout(() => {
+                    // In production, this would redirect to a separate staff dashboard URL
+                    // For now, we'll just show a placeholder
+                    window.open('/staff-dashboard', '_blank');
+                }, 1000);
+            } else {
+                showNotification('Invalid credentials. Access denied.', true);
+            }
+        }
+        });
+    </script>
+</body>
+</html>
