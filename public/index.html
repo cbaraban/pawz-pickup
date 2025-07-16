@@ -232,12 +232,13 @@ async function sendVerification() {
         return;
     }
     const cleanPhone = phoneInput.replace(/\D/g, '');
+
+    // Accept both 10 and 11 digits for US numbers
     let formattedPhone;
-    const countryCode = document.querySelector('.country-code').value; // e.g. "+1"
     if (cleanPhone.length === 10) {
-        formattedPhone = `${countryCode}${cleanPhone}`;
+        formattedPhone = cleanPhone; // just 5551234567
     } else if (cleanPhone.length === 11 && cleanPhone.startsWith('1')) {
-        formattedPhone = `+${cleanPhone}`;
+        formattedPhone = cleanPhone; // 15551234567
     } else {
         showNotification('Please enter a valid 10-digit US phone number', true);
         return;
@@ -251,7 +252,7 @@ async function sendVerification() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ phone: formattedPhone })
+            body: JSON.stringify({ phone: formattedPhone }) // plain number, no +
         });
 
         const data = await result.json();
