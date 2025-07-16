@@ -578,43 +578,48 @@
         }
 
         // API functions
-        async function sendVerification() {
-            const phone = document.getElementById('phone').value;
-            if (!phone) {
-                showNotification('Please enter a phone number', true);
-                return;
-            }
+       async function sendVerification() {
+    const phoneInput = document.getElementById('phone').value;
+    if (!phoneInput) {
+        showNotification('Please enter a phone number', true);
+        return;
+    }
 
-            setButtonLoading('sendVerificationBtn', true);
+    // Clean and format phone number
+    const cleanPhone = phoneInput.replace(/\D/g, '');
+    const formattedPhone = cleanPhone.startsWith('1') ? `+${cleanPhone}` : `+1${cleanPhone}`;
 
-            try {
-                const result = await fetch(`${API_BASE_URL}/send-verification`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ phone })
-                });
+    setButtonLoading('sendVerificationBtn', true);
 
-                const data = await result.json();
+    try {
+        const result = await fetch(`${API_BASE_URL}/send-verification`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ phone: formattedPhone })
+        });
 
-                if (result.ok) {
-                    customerData.phone = data.phone;
-                    showNotification('Verification code sent!');
-                    showSection('verificationSection');
-                    updateStep(2);
-                    
-                    document.querySelector('.verification-digit').focus();
-                } else {
-                    showNotification(data.error || 'Failed to send verification code', true);
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showNotification('Network error - please try again', true);
-            } finally {
-                setButtonLoading('sendVerificationBtn', false);
-            }
+        const data = await result.json();
+
+        if (result.ok) {
+            customerData.phone = data.phone;
+            showNotification('Verification code sent!');
+            showSection('verificationSection');
+            updateStep(2);
+            
+            document.querySelector('.verification-digit').focus();
+        } else {
+            console.error('API Error:', data);
+            showNotification(data.error || 'Failed to send verification code', true);
         }
+    } catch (error) {
+        console.error('Network Error:', error);
+        showNotification('Network error - please try again', true);
+    } finally {
+        setButtonLoading('sendVerificationBtn', false);
+    }
+}
 
         async function verifyCode() {
             const digits = document.querySelectorAll('.verification-digit');
@@ -925,15 +930,27 @@
             }
         }
 
-        // Event listeners
-        document.addEventListener('DOMContentLoaded', function() {
-            // Phone verification
-            document.getElementById('sendVerificationBtn').addEventListener('click', sendVerification);
-            document.getElementById('verifyCodeBtn').addEventListener('click', verifyCode);
+            // Staff Authentication Functions
+        function showStaffLogin() {
+            const username = prompt('Staff Username:');
+            if (!username) return;
 
-            // Customer info
-            document.getElementById('addPetBtn').addEventListener('click', () => showSection('addPetSection'));
-            document.getElementById('addPetSubmitBtn').addEventListener('click', addPet);
+            const password = prompt('Staff Password:');
+            if (!password) return;
+
+            // Check credentials (you can change these)
+            if (username === 'pawzstaff' && password === 'pawz2024!') {
+                showNotification('Staff access granted! Opening dashboard...');
+                setTimeout(() => {
+                    // In production, this would redirect to a separate staff dashboard URL
+                    // For now, we'll just show a placeholder
+                    window.open('/staff-dashboard', '_blank');
+                }, 1000);
+            } else {
+                showNotification('Invalid credentials. Access denied.', true);
+            }
+        }
+
         // Event listeners
         document.addEventListener('DOMContentLoaded', function() {
             // Phone verification
@@ -1008,6 +1025,11 @@
                 });
             });
 
+            // Staff Login Protection
+            document.getElementById('viewToggleBtn').addEventListener('click', function() {
+                showStaffLogin();
+            });
+
             // Add pet name enter key
             document.getElementById('petName').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
@@ -1020,11 +1042,6 @@
                 if (e.key === 'Enter') {
                     sendVerification();
                 }
-            });
-
-            // View toggle - Staff Login Protection
-            document.getElementById('viewToggleBtn').addEventListener('click', function() {
-                showStaffLogin();
             });
 
             // Global keyboard shortcuts
@@ -1054,28 +1071,6 @@
 
             // Initialize
             console.log('🐾 Pawz Pet Pickup System Loaded');
-        });
-
-        // Staff Authentication Functions
-        function showStaffLogin() {
-            const username = prompt('Staff Username:');
-            if (!username) return;
-
-            const password = prompt('Staff Password:');
-            if (!password) return;
-
-            // Check credentials (you can change these)
-            if (username === 'pawzstaff' && password === 'pawz2024!') {
-                showNotification('Staff access granted! Opening dashboard...');
-                setTimeout(() => {
-                    // In production, this would redirect to a separate staff dashboard URL
-                    // For now, we'll just show a placeholder
-                    window.open('/staff-dashboard', '_blank');
-                }, 1000);
-            } else {
-                showNotification('Invalid credentials. Access denied.', true);
-            }
-        }
         });
     </script>
 </body>
