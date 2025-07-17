@@ -180,6 +180,7 @@ app.post('/api/send-verification', smsLimiter, validatePhone, async (req, res) =
             from: process.env.TWILIO_PHONE_NUMBER,
             to: formattedPhone
         });
+        console.log('Twilio SMS sent to:', formattedPhone);
 
         res.json({ 
             success: true, 
