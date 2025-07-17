@@ -46,10 +46,10 @@ const smsLimiter = rateLimit({
 });
 
 // Database connection
-console.log('DATABASE_URL:', process.env.DATABASE_URL);
+console.log('DATABASE_URL_2:', process.env.DATABASE_URL_2);
 console.log('SSL CONFIG:', { rejectUnauthorized: false });
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: process.env.DATABASE_URL_2,
     ssl: { rejectUnauthorized: false }
 });
 
